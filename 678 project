@@ -50,3 +50,65 @@ data_need <- rbind(tmp1[,col1],tmp2[,col1],tmp3[,col1])
 
 
 ```
+
+
+## Data Analysis
+
+
+
+```{r pressure, echo=FALSE}
+
+#The lmer function
+
+M0 <- lmer (price ~ 1 + (1 |brand), data = data_need )
+display (M0)
+# Using lmer() for variable intercept model predictions shows that the Std.Dev is 35.15. This model only includes the constant price term (predictor "1")
+
+
+M1 <- lmer (price ~ rating + (1 | brand), data = data_need )
+display (M1)
+#This result shows inferences about the intercept and slope for y=price, and x=rating, when grouped by the brand. The estimated change obtained through the model: ^σα=35.13, ^σy=58.48. This mock up works for 226 perfume products from 16 brands.
+
+
+#Estimated regression coefficients
+coef (M1)
+# The variable here is price ~ rating. By estimating the model results, it can be concluded that the estimated regression line of the Acqua Di Parma brand is y=149.65019-0.8464313x. The estimated regression line for the AERIN brand is y=131.81324-0.8464313x. By analogy, their intercepts are different, and the slopes are all the same at 0.8464313. This is because The specification (1|brand) tells the model only to allow the intercept to vary.
+
+
+fixef (M1)
+#The estimated regression line of the average brand obtained by Fixed and random effects is y=104.6528040-0.8464313x.
+
+
+# We can see some errors with brand-level
+ranef (M1)
+# Through this conclusion, we can know that the value of the intercept is moving up or down in a specific brand. Acqua Di Parma is 44.997388 higher than the average, so the intercept of the regression line should be 44.997388 larger, which  is y=(104.6528040+44.997388)-0.8464313x=149.650192-0.8464313x
+
+
+
+#Uncertainties in the estimated coefficients
+se.fixef (M1)
+se.ranef (M1)
+# Because the model has a common slope for all brands, the standard error value gives the value of the intercept.
+
+
+
+ggplot(data = data_need) +  
+ aes(x =log(love), y = log(price)) +  
+ geom_point() +  
+ geom_smooth(formula = 'y ~ x', method = "lm") +  
+ labs(titile = "love vs price", x = "love", y = "price") 
+
+
+value_by_goals1 <- ggplot(data = data_need) +  
+ aes(x = log(love), y =log(price)) +  
+ geom_point(aes(color = factor(brand)), size = .6,alpha = 0.1) +  
+ geom_smooth(aes(color = factor(brand)), method = "lm", se = FALSE, formula = 'y ~ x') +  
+ labs(title = "(a) love vs price", x = "love", y = "price") 
+
+value_by_goals2 <- ggplot(data = data_need) +  
+ aes(x = log(rating), y =log(price)) +  
+ geom_point(aes(color = factor(brand)), size = .6,alpha = 0.1) +  
+ geom_smooth(aes(color = factor(brand)), method = "lm", se = FALSE, formula = 'y ~ x') +  
+ labs(title = "(a) rating vs price", x = "rating", y = "price") 
+
+grid.arrange(value_by_goals1, value_by_goals2, ncol = 2)
