@@ -1,0 +1,52 @@
+---
+title: "Various Sephora cosmetics brands, categories, prices, and rating analysis reports."
+author:"Hui Xiong"
+date: "2022-12-11"
+df_print: "paged"
+---
+
+```{r setup, include=FALSE}
+                      
+library(tidyverse)
+library(dplyr)
+library(gridExtra)
+library(readr)
+library(stringr)
+library(knitr)
+library(kableExtra)
+library(ggplot2)
+library(merTools)
+library(sjPlot)
+library(lme4)
+
+
+```
+
+## Abstract:
+
+This is an analysis report about Sephora's various cosmetic brands, categories, prices, and rating.
+
+#Introduction:
+
+
+#1.1 Background: 
+
+
+#1.2 Data Sources:
+
+
+#1.3 Data combining and cleaning:
+```{r, echo=FALSE}
+sephora_website_dataset<-read.csv("~/Desktop/MA678-Final-Project/sephora_website_dataset.csv", comment.char="#")
+
+
+tmp1 <- sephora_website_dataset %>% filter(category == "Perfume")
+tmp2 <- sephora_website_dataset %>% filter(category == "Perfume Gift Sets")
+tmp3 <- sephora_website_dataset %>% filter(category == "Fragrance")
+
+
+col1<- c("brand","love","price","rating")
+data_need <- rbind(tmp1[,col1],tmp2[,col1],tmp3[,col1])
+
+
+```
