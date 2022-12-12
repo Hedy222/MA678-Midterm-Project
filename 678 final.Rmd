@@ -1,0 +1,151 @@
+---
+title: "Various Sephora cosmetics brands, categories, prices, and rating analysis reports."
+author:"Hui Xiong"
+date: "2022-12-11"
+df_print: "paged"
+---
+
+```{r setup, include=FALSE}
+                      
+library(tidyverse)
+library(dplyr)
+library(gridExtra)
+library(readr)
+library(stringr)
+library(knitr)
+library(kableExtra)
+library(ggplot2)
+library(merTools)
+library(sjPlot)
+library(lme4)
+
+
+```
+
+## Abstract:
+
+This is an analysis report about Sephora's various cosmetic brands, categories, prices, and rating. Sephora is a makeup brand. It collects various brands of skin care products, cosmetics, perfumes, etc. The brand classifies the leading group of the report through the analysis of price, rating, and love degree. The analysis results show that the degree of preference will affect the price, and the rating will also affect the price.The article is mainly divided into 4 parts: introduction, data analysis, results, conclusion.
+
+
+
+#Introduction:
+Usually, when we choose to buy perfume, we will consider the brand, price, rating, and love. So the variables analyzed in my thesis are brand, price, rating, and love. These parameters are critical and meaningful. For example, the price of a well-known brand will be relatively higher than that of ordinary brands. But a regular brand may also be loved by everyone because of its relatively low price. The rating will be more objective and consider the price, brand, and feeling after use to conclude. Whether there is a correlation between rating and price is what I have considered. So I want to use a multi-level model to further analyze the relationship between price and love and compare the relationship between price and rating.
+
+#1.1 Background: 
+
+
+
+#1.2 Data Sources:
+I downloaded it through the kaggle website(https://www.kaggle.com/datasets/raghadalharbi/all-products-available-on-sephora-website). 
+
+First, I downloaded the entire dataset. The dataset as a whole is extensive. I filtered by category and selected Fragrance, Perfume, and Perfume Gift Sets as the object data. Then I did a variable screening and selected brand, love, price, and rating. Finally, the cleaned data set is obtained.
+
+
+#1.3 Data combining and cleaning:
+```{r, echo=FALSE}
+sephora_website_dataset<-read.csv("~/Desktop/MA678-Final-Project/sephora_website_dataset.csv", comment.char="#")
+
+
+tmp1 <- sephora_website_dataset %>% filter(category == "Perfume")
+tmp2 <- sephora_website_dataset %>% filter(category == "Perfume Gift Sets")
+tmp3 <- sephora_website_dataset %>% filter(category == "Fragrance")
+
+
+col1<- c("brand","love","price","rating")
+data_need <- rbind(tmp1[,col1],tmp2[,col1],tmp3[,col1])
+
+
+
+```
+
+
+## Data Analysis
+
+
+
+```{r pressure, echo=FALSE}
+
+#The lmer function
+
+M0 <- lmer (price ~ 1 + (1 |brand), data = data_need )
+display (M0)
+# Using lmer() for variable intercept model predictions shows that the Std.Dev is 35.15. This model only includes the constant price term (predictor "1")
+
+
+M1 <- lmer (price ~ rating + (1 | brand), data = data_need )
+display (M1)
+#This result shows inferences about the intercept and slope for y=price, and x=rating, when grouped by the brand. The estimated change obtained through the model: ^σα=35.13, ^σy=58.48. This mock up works for 226 perfume products from 16 brands.
+
+M1.1<-lmer (price ~ love + (1 | brand), data = data_need )
+display (M1.1)
+#Inferences about y=price, x=love, intercept and slope when grouped by the brand are shown through the model results. The estimated change obtained through the model: ^σα=35.66, ^σy=58.13. This mock up works for 226 perfume products from 16 brands.
+
+
+#Estimated regression coefficients
+coef (M1)
+# The variable here is price ~ rating. By estimating the model results, it can be concluded that the estimated regression line of the Acqua Di Parma brand is y=149.65019-0.8464313x. The estimated regression line for the AERIN brand is y=131.81324-0.8464313x. By analogy, their intercepts are different, and the slopes are all the same at 0.8464313. This is because The specification (1|brand) tells the model only to allow the intercept to vary.
+
+coef (M1.1)
+# The variable here is price ~ love. By estimating the model results, it can be concluded that the estimated regression line of the Acqua Di Parma brand is y=146.0832+0.0004207388x. The estimated regression line for the AERIN brand is y=126.8002+0.0004207388x. By analogy, their intercepts are different, and the slopes are all the same at 0.0004207388. This is because The specification (1|brand) tells the model only to allow the intercept to vary.
+
+
+fixef (M1)
+#The estimated regression line of the average brand obtained by Fixed and random effects is y=104.6528040-0.8464313x.
+
+
+fixef (M1.1)
+#The estimated regression line of the average brand obtained by Fixed and random effects is y=9.836165e+01 + 4.207388e-04x.
+
+
+# We can see some errors with brand-level
+ranef (M1)
+# Through this conclusion, we can know that the value of the intercept is moving up or down in a specific brand. Acqua Di Parma is 44.997388 higher than the average, so the intercept of the regression line should be 44.997388 larger, which  is y=(104.6528040+44.997388)-0.8464313x=149.650192-0.8464313x
+
+
+ranef (M1.1)
+# Through this conclusion, we can know that the value of the intercept is moving up or down in a specific brand. Acqua Di Parma is 47.721550 higher than the average, so the intercept of the regression line should be 47.721550 larger, which is y=(9.836165e+01+47.721550)-0.8464313x.
+
+
+
+ggplot(data = data_need) +  
+ aes(x =log(love), y = log(price)) +  
+ geom_point() +  
+ geom_smooth(formula = 'y ~ x', method = "lm") +  
+ labs(titile = "love vs price", x = "love", y = "price") 
+
+
+value_by_goals1 <- ggplot(data = data_need) +  
+ aes(x = log(love), y =log(price)) +  
+ geom_point(aes(color = factor(brand)), size = 0.3,alpha = 0.3) +  
+ geom_smooth(aes(color = factor(brand)), method = "lm", se = FALSE, formula = 'y ~ x') +  
+ labs(title = "(a) love vs price", x = "love", y = "price") 
+
+value_by_goals2 <- ggplot(data = data_need) +  
+ aes(x = log(rating), y =log(price)) +  
+ geom_point(aes(color = factor(brand)), size = 0.3,alpha = 0.3) +  
+ geom_smooth(aes(color = factor(brand)), method = "lm", se = FALSE, formula = 'y ~ x') +  
+ labs(title = "(a) rating vs price", x = "rating", y = "price") 
+
+grid.arrange(value_by_goals1, value_by_goals2, ncol = 2)
+
+
+# multilevel model
+tmp4 <- sephora_website_dataset %>% filter(rating == "5.0")
+col1<- c("brand","love","price","rating")
+data_need_2 <- rbind(tmp1[,col1],tmp2[,col1],tmp3[,col1],tmp4[,col1])
+sample_1 = sample_n(data_need_2, 50)
+M_new<-lmer (price ~ love + (1 | brand), data = sample_1 )
+summary(M_new)
+sample_1$M_new <- predict(M_new)
+sample_1 %>%
+  ggplot(aes(love, price , color = brand, group = brand)) + 
+  geom_smooth(se = F, method = lm) +
+  theme_bw()
+
+
+
+```
+
+
+
+
