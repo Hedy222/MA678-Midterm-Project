@@ -69,20 +69,34 @@ M1 <- lmer (price ~ rating + (1 | brand), data = data_need )
 display (M1)
 #This result shows inferences about the intercept and slope for y=price, and x=rating, when grouped by the brand. The estimated change obtained through the model: ^σα=35.13, ^σy=58.48. This mock up works for 226 perfume products from 16 brands.
 
+M1.1<-lmer (price ~ love + (1 | brand), data = data_need )
+display (M1.1)
+#Inferences about y=price, x=love, intercept and slope when grouped by the brand are shown through the model results. The estimated change obtained through the model: ^σα=35.66, ^σy=58.13. This mock up works for 226 perfume products from 16 brands.
+
 
 #Estimated regression coefficients
 coef (M1)
 # The variable here is price ~ rating. By estimating the model results, it can be concluded that the estimated regression line of the Acqua Di Parma brand is y=149.65019-0.8464313x. The estimated regression line for the AERIN brand is y=131.81324-0.8464313x. By analogy, their intercepts are different, and the slopes are all the same at 0.8464313. This is because The specification (1|brand) tells the model only to allow the intercept to vary.
+
+coef (M1.1)
+# The variable here is price ~ love. By estimating the model results, it can be concluded that the estimated regression line of the Acqua Di Parma brand is y=146.0832+0.0004207388x. The estimated regression line for the AERIN brand is y=126.8002+0.0004207388x. By analogy, their intercepts are different, and the slopes are all the same at 0.0004207388. This is because The specification (1|brand) tells the model only to allow the intercept to vary.
 
 
 fixef (M1)
 #The estimated regression line of the average brand obtained by Fixed and random effects is y=104.6528040-0.8464313x.
 
 
+fixef (M1.1)
+#The estimated regression line of the average brand obtained by Fixed and random effects is y=9.836165e+01 + 4.207388e-04x.
+
+
 # We can see some errors with brand-level
 ranef (M1)
 # Through this conclusion, we can know that the value of the intercept is moving up or down in a specific brand. Acqua Di Parma is 44.997388 higher than the average, so the intercept of the regression line should be 44.997388 larger, which  is y=(104.6528040+44.997388)-0.8464313x=149.650192-0.8464313x
 
+
+ranef (M1.1)
+# Through this conclusion, we can know that the value of the intercept is moving up or down in a specific brand. Acqua Di Parma is 47.721550 higher than the average, so the intercept of the regression line should be 47.721550 larger, which is y=(9.836165e+01+47.721550)-0.8464313x.
 
 
 #Uncertainties in the estimated coefficients
@@ -101,14 +115,16 @@ ggplot(data = data_need) +
 
 value_by_goals1 <- ggplot(data = data_need) +  
  aes(x = log(love), y =log(price)) +  
- geom_point(aes(color = factor(brand)), size = .6,alpha = 0.1) +  
+ geom_point(aes(color = factor(brand)), size = .8,alpha = 0.3) +  
  geom_smooth(aes(color = factor(brand)), method = "lm", se = FALSE, formula = 'y ~ x') +  
  labs(title = "(a) love vs price", x = "love", y = "price") 
 
 value_by_goals2 <- ggplot(data = data_need) +  
  aes(x = log(rating), y =log(price)) +  
- geom_point(aes(color = factor(brand)), size = .6,alpha = 0.1) +  
+ geom_point(aes(color = factor(brand)), size = .8,alpha = 0.3) +  
  geom_smooth(aes(color = factor(brand)), method = "lm", se = FALSE, formula = 'y ~ x') +  
  labs(title = "(a) rating vs price", x = "rating", y = "price") 
 
 grid.arrange(value_by_goals1, value_by_goals2, ncol = 2)
+
+
